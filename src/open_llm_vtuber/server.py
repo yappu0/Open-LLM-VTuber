@@ -94,9 +94,9 @@ class WebSocketServer:
         # It will be populated during the initialize method call
 
         # Get CORS origins from config, default to localhost if not specified
-        cors_origins = getattr(config.system_config, 'cors_origins', None)
+        cors_origins = getattr(config.system_config, "cors_origins", None)
         if cors_origins is None:
-            cors_origins = ["http://localhost:8000", "http://127.0.0.1:8000"]
+            cors_origins = ["http://localhost:12393", "http://127.0.0.1:12393"]
 
         # Set CORS origins for static file handlers
         CORSStaticFiles._cors_origins = cors_origins

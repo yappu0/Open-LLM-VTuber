@@ -263,7 +263,13 @@ def init_webtool_routes(default_context_cache: ServiceContext) -> APIRouter:
 
                 except Exception as e:
                     logger.error(f"Error generating TTS: {e}")
-                    await websocket.send_json({"status": "error", "message": str(e)})
+                    # Security: Don't expose internal error details to clients
+                    await websocket.send_json(
+                        {
+                            "status": "error",
+                            "message": "An error occurred during speech synthesis",
+                        }
+                    )
 
         except WebSocketDisconnect:
             logger.info("TTS WebSocket client disconnected")

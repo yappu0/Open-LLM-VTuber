@@ -16,8 +16,8 @@ class SystemConfig(I18nMixin):
     # Security: CORS origins configuration - defaults to localhost only
     # Set to ["*"] for development or add specific origins for production
     cors_origins: List[str] = Field(
-        default_factory=lambda: ["http://localhost:8000", "http://127.0.0.1:8000"],
-        alias="cors_origins"
+        default_factory=lambda: ["http://localhost:12393", "http://127.0.0.1:12393"],
+        alias="cors_origins",
     )
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
@@ -36,8 +36,8 @@ class SystemConfig(I18nMixin):
             zh="启用代理模式以支持多个客户端使用一个 ws 连接",
         ),
         "cors_origins": Description(
-            en="Allowed CORS origins (use [\"*\"] for any origin, not recommended for production)",
-            zh="允许的CORS来源 (使用 [\"*\"] 允许任何来源，不建议在生产环境中使用)",
+            en='Allowed CORS origins (use ["*"] for any origin, not recommended for production)',
+            zh='允许的CORS来源 (使用 ["*"] 允许任何来源，不建议在生产环境中使用)',
         ),
     }
 

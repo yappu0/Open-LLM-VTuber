@@ -24,7 +24,8 @@ class ConfigSynchronizer:
         self.lang = lang
         self.texts = TEXTS[lang]
         self.default_path = ZH_DEFAULT_CONF if lang == "zh" else EN_DEFAULT_CONF
-        # Security: Use round-trip type to preserve comments with safe loading
+        # Use round-trip type ("rt") to preserve comments and formatting during config sync
+        # Note: ruamel.yaml uses safe loading by default regardless of type
         self.yaml = YAML(typ="rt")
         self.yaml.preserve_quotes = True
         self.user_path = USER_CONF
@@ -286,7 +287,8 @@ class ConfigSynchronizer:
         """
         fallback_version = "v1.1.1"
         try:
-            # Security: Use round-trip type for safe YAML loading
+            # Use round-trip type ("rt") to preserve comments and formatting
+            # Note: ruamel.yaml uses safe loading by default regardless of type
             yaml = YAML(typ="rt")
             with open(BACKUP_CONF, "r", encoding="utf-8") as f:
                 backup_conf = yaml.load(f)

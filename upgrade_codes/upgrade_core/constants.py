@@ -10,8 +10,8 @@ BACKUP_CONF = "conf.yaml.backup"
 ZH_DEFAULT_CONF = "config_templates/conf.ZH.default.yaml"
 EN_DEFAULT_CONF = "config_templates/conf.default.yaml"
 
-# Security: Use round-trip type to preserve comments but with safe loading behavior
-# ruamel.yaml's YAML() uses safe loading by default for security
+# Use round-trip type ("rt") to preserve comments and formatting during config operations
+# Note: ruamel.yaml uses safe loading by default regardless of type
 yaml = YAML(typ="rt")
 yaml.preserve_quotes = True
 # user_config = yaml.load(load_text_file_with_guess_encoding(USER_CONF))
