@@ -1,0 +1,78 @@
+# Test configuration file for unit tests
+system_config:
+  conf_version: 'v1.2.1'
+  host: 'localhost'
+  port: 12393
+  config_alts_dir: 'characters'
+  tool_prompts:
+    live2d_expression_prompt: 'live2d_expression_prompt'
+    group_conversation_prompt: 'group_conversation_prompt'
+    mcp_prompt: 'mcp_prompt'
+    proactive_speak_prompt: 'proactive_speak_prompt'
+
+character_config:
+  conf_name: 'test_character'
+  conf_uid: 'test_character_001'
+  live2d_model_name: 'test_model'
+  character_name: 'Test AI'
+  human_name: 'Human'
+  avatar: ''
+  persona_prompt: |
+    You are a helpful AI assistant for testing purposes.
+    You respond concisely and accurately.
+
+  agent_config:
+    conversation_agent_choice: 'basic_memory_agent'
+    agent_settings:
+      basic_memory_agent:
+        llm_provider: 'ollama_llm'
+        faster_first_response: true
+        segment_method: 'pysbd'
+        use_mcpp: false
+        mcp_enabled_servers: []
+    llm_configs:
+      ollama_llm:
+        base_url: 'http://localhost:11434/v1'
+        model: 'qwen2.5:latest'
+        temperature: 1.0
+        keep_alive: -1
+        unload_at_exit: true
+
+  asr_config:
+    asr_model: 'sherpa_onnx_asr'
+    sherpa_onnx_asr:
+      model_type: 'sense_voice'
+      sense_voice: 'model.onnx'
+      tokens: 'tokens.txt'
+      num_threads: 4
+      use_itn: true
+      provider: 'cpu'
+
+  tts_config:
+    tts_model: 'edge_tts'
+    edge_tts:
+      voice: 'en-US-AriaNeural'
+
+  vad_config:
+    vad_model: 'silero_vad'
+    silero_vad:
+      orig_sr: 16000
+      target_sr: 16000
+      prob_threshold: 0.4
+      db_threshold: 60
+      required_hits: 3
+      required_misses: 24
+      smoothing_window: 5
+
+  tts_preprocessor_config:
+    remove_special_char: true
+    ignore_brackets: true
+    ignore_parentheses: true
+    ignore_asterisks: true
+    ignore_angle_brackets: true
+    translator_config:
+      translate_audio: false
+      translate_provider: 'deeplx'
+      deeplx:
+        deeplx_target_lang: 'EN'
+        deeplx_api_endpoint: 'http://localhost:1188/translate'
