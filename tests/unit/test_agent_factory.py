@@ -1,7 +1,7 @@
 """Tests for Agent factory functionality."""
 
 import pytest
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock
 
 from src.open_llm_vtuber.agent.agent_factory import AgentFactory
 
@@ -183,7 +183,11 @@ class TestAgentInterface:
     @pytest.mark.asyncio
     async def test_mock_agent_engine_implements_chat(self, mock_agent_engine):
         """Test that mock agent engine implements chat method correctly."""
-        from src.open_llm_vtuber.agent.input_types import BatchInput, TextData, TextSource
+        from src.open_llm_vtuber.agent.input_types import (
+            BatchInput,
+            TextData,
+            TextSource,
+        )
 
         input_data = BatchInput(
             texts=[TextData(source=TextSource.INPUT, content="Hello!")]
@@ -217,7 +221,11 @@ class TestAgentInterface:
     async def test_mock_agent_engine_multiple_responses(self):
         """Test mock agent engine with multiple configured responses."""
         from tests.mocks import MockAgentEngine
-        from src.open_llm_vtuber.agent.input_types import BatchInput, TextData, TextSource
+        from src.open_llm_vtuber.agent.input_types import (
+            BatchInput,
+            TextData,
+            TextSource,
+        )
 
         agent = MockAgentEngine(
             responses=["First response", "Second response", "Third response"]
@@ -238,7 +246,11 @@ class TestAgentInterface:
     @pytest.mark.asyncio
     async def test_mock_agent_engine_stores_last_input(self, mock_agent_engine):
         """Test that mock agent engine stores the last input."""
-        from src.open_llm_vtuber.agent.input_types import BatchInput, TextData, TextSource
+        from src.open_llm_vtuber.agent.input_types import (
+            BatchInput,
+            TextData,
+            TextSource,
+        )
 
         input_data = BatchInput(
             texts=[TextData(source=TextSource.INPUT, content="Remember this!")]

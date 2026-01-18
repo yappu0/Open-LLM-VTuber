@@ -1,10 +1,7 @@
 """Tests for conversation utility functions."""
 
 import pytest
-import json
-import numpy as np
-from unittest.mock import patch, MagicMock, AsyncMock
-from typing import Dict, Any, List
+from unittest.mock import MagicMock, AsyncMock
 
 from src.open_llm_vtuber.conversations.conversation_utils import (
     create_batch_input,

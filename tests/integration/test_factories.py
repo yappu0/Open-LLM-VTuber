@@ -5,8 +5,6 @@ These tests verify that factories can create appropriate engine instances
 without actually loading heavy models or making API calls.
 """
 
-from unittest.mock import MagicMock, patch
-
 import pytest
 
 
@@ -194,9 +192,20 @@ class TestFactoryConfiguration:
             except ValueError as e:
                 if "Unknown" in str(e) or "not supported" in str(e).lower():
                     pytest.fail(f"ASR system '{system}' should be supported")
-            except Exception:
-                # Other errors are expected (missing deps, config, etc.)
+                # Other ValueErrors (missing config) are acceptable
+            except (ImportError, ModuleNotFoundError):
+                # Expected when optional dependency is not installed
                 pass
+            except TypeError:
+                # Expected when required config is missing
+                pass
+            except Exception as e:
+                # Some SDKs (e.g., Groq) raise their own errors for missing API keys
+                # These are acceptable as they indicate the factory recognized the type
+                if "api_key" in str(e).lower() or "api key" in str(e).lower():
+                    pass
+                else:
+                    raise
 
     def test_tts_factory_supported_engines(self):
         """Verify TTS factory supports expected engines."""
@@ -214,9 +223,20 @@ class TestFactoryConfiguration:
             except ValueError as e:
                 if "Unknown" in str(e) or "not supported" in str(e).lower():
                     pytest.fail(f"TTS engine '{engine}' should be supported")
-            except Exception:
-                # Other errors are expected
+                # Other ValueErrors (missing config) are acceptable
+            except (ImportError, ModuleNotFoundError):
+                # Expected when optional dependency is not installed
                 pass
+            except TypeError:
+                # Expected when required config is missing
+                pass
+            except Exception as e:
+                # Some SDKs raise their own errors for missing API keys
+                # These are acceptable as they indicate the factory recognized the type
+                if "api_key" in str(e).lower() or "api key" in str(e).lower():
+                    pass
+                else:
+                    raise
 
 
 class TestEdgeTTSFactory:

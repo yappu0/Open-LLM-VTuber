@@ -189,7 +189,6 @@ class TestServiceContextInitEngines:
         mock_live2d_class = MagicMock()
 
         # Set up character_config
-        from src.open_llm_vtuber.config_manager import CharacterConfig
 
         with patch(
             "src.open_llm_vtuber.service_context.Live2dModel",
@@ -321,7 +320,7 @@ class TestDeepMerge:
         dict2 = {"b": {"d": 3}}
         original_dict1 = {"a": 1, "b": {"c": 2}}
 
-        result = deep_merge(dict1, dict2)
+        deep_merge(dict1, dict2)
 
         assert dict1 == original_dict1
 

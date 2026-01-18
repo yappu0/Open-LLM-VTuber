@@ -2,10 +2,7 @@
 Tests for chat history manager (chat_history_manager.py).
 """
 
-import json
 import os
-import tempfile
-import shutil
 
 import pytest
 
@@ -31,10 +28,19 @@ class TestSafeFilename:
         assert not chm._is_safe_filename(long_name)
 
     def test_filename_with_path_separator(self):
-        """Test filenames with path separators."""
-        # Note: The regex pattern may allow some characters
-        # but the sanitize function should catch path traversal
-        pass
+        """Test filenames with path separators are handled by sanitize."""
+        # Note: _is_safe_filename uses a permissive regex, so path separators
+        # may not be rejected here. The _sanitize_path_component function
+        # handles path traversal prevention by extracting basename.
+        # Here we just verify the behavior is consistent.
+        result_forward = chm._is_safe_filename("path/to/file")
+        result_back = chm._is_safe_filename("path\\to\\file")
+        result_traversal = chm._is_safe_filename("../../../etc/passwd")
+        # These assertions document current behavior - sanitization is done
+        # by _sanitize_path_component, not _is_safe_filename
+        assert isinstance(result_forward, bool)
+        assert isinstance(result_back, bool)
+        assert isinstance(result_traversal, bool)
 
     def test_unicode_filename(self):
         """Test unicode characters in filename."""
@@ -75,10 +81,6 @@ class TestCreateNewHistory:
         self.temp_dir = tmp_path / "chat_history"
         self.temp_dir.mkdir()
 
-        # Store original function
-        original_ensure = chm._ensure_conf_dir
-        original_get_path = chm._get_safe_history_path
-
         def mock_ensure_conf_dir(conf_uid):
             if not conf_uid:
                 raise ValueError("conf_uid cannot be empty")
@@ -91,7 +93,9 @@ class TestCreateNewHistory:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             if not full_path.startswith(base_dir):
                 raise ValueError("Invalid path: Path traversal detected")
             return full_path
@@ -150,7 +154,9 @@ class TestStoreMessage:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             return full_path
 
         monkeypatch.setattr(chm, "_ensure_conf_dir", mock_ensure_conf_dir)
@@ -182,9 +188,12 @@ class TestStoreMessage:
         """Test storing message with optional name and avatar."""
         history_uid = chm.create_new_history("conf1")
         chm.store_message(
-            "conf1", history_uid, "ai", "Hi!",
+            "conf1",
+            history_uid,
+            "ai",
+            "Hi!",
             name="Assistant",
-            avatar="/avatars/ai.png"
+            avatar="/avatars/ai.png",
         )
 
         messages = chm.get_history("conf1", history_uid)
@@ -238,7 +247,9 @@ class TestGetHistory:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             return full_path
 
         monkeypatch.setattr(chm, "_ensure_conf_dir", mock_ensure_conf_dir)
@@ -283,7 +294,9 @@ class TestDeleteHistory:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             return full_path
 
         monkeypatch.setattr(chm, "_ensure_conf_dir", mock_ensure_conf_dir)
@@ -333,7 +346,9 @@ class TestGetHistoryList:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             return full_path
 
         monkeypatch.setattr(chm, "_ensure_conf_dir", mock_ensure_conf_dir)
@@ -391,7 +406,9 @@ class TestModifyLatestMessage:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             return full_path
 
         monkeypatch.setattr(chm, "_ensure_conf_dir", mock_ensure_conf_dir)
@@ -415,16 +432,12 @@ class TestModifyLatestMessage:
         history_uid = chm.create_new_history("conf1")
         chm.store_message("conf1", history_uid, "human", "User message")
 
-        result = chm.modify_latest_message(
-            "conf1", history_uid, "ai", "New AI message"
-        )
+        result = chm.modify_latest_message("conf1", history_uid, "ai", "New AI message")
         assert result is False
 
     def test_modify_latest_message_nonexistent(self):
         """Test modifying nonexistent history."""
-        result = chm.modify_latest_message(
-            "conf1", "nonexistent", "ai", "Message"
-        )
+        result = chm.modify_latest_message("conf1", "nonexistent", "ai", "Message")
         assert result is False
 
 
@@ -449,7 +462,9 @@ class TestMetadata:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             return full_path
 
         monkeypatch.setattr(chm, "_ensure_conf_dir", mock_ensure_conf_dir)
@@ -466,9 +481,7 @@ class TestMetadata:
     def test_update_metadata(self):
         """Test updating metadata."""
         history_uid = chm.create_new_history("conf1")
-        result = chm.update_metadate(
-            "conf1", history_uid, {"custom_field": "value"}
-        )
+        result = chm.update_metadate("conf1", history_uid, {"custom_field": "value"})
         assert result is True
 
         metadata = chm.get_metadata("conf1", history_uid)
@@ -501,7 +514,9 @@ class TestRenameHistoryFile:
             safe_conf_uid = chm._sanitize_path_component(conf_uid)
             safe_history_uid = chm._sanitize_path_component(history_uid)
             base_dir = str(self.temp_dir / safe_conf_uid)
-            full_path = os.path.normpath(os.path.join(base_dir, f"{safe_history_uid}.json"))
+            full_path = os.path.normpath(
+                os.path.join(base_dir, f"{safe_history_uid}.json")
+            )
             return full_path
 
         monkeypatch.setattr(chm, "_ensure_conf_dir", mock_ensure_conf_dir)

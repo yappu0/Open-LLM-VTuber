@@ -88,7 +88,9 @@ class TestTTSTaskManagerSpeak:
         return model
 
     @pytest.mark.asyncio
-    async def test_speak_empty_text_sends_silent(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_speak_empty_text_sends_silent(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that empty text sends silent payload."""
         display_text = DisplayText(text="")
         actions = Actions()
@@ -111,7 +113,9 @@ class TestTTSTaskManagerSpeak:
         mock_tts_engine.async_generate_audio.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_speak_punctuation_only_sends_silent(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_speak_punctuation_only_sends_silent(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that punctuation-only text sends silent payload."""
         display_text = DisplayText(text="...")
         websocket_send = AsyncMock()
@@ -131,14 +135,18 @@ class TestTTSTaskManagerSpeak:
         mock_tts_engine.async_generate_audio.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_speak_increments_sequence(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_speak_increments_sequence(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that speak increments sequence counter."""
         display_text = DisplayText(text="Hello")
         websocket_send = AsyncMock()
 
         initial_sequence = manager._sequence_counter
 
-        with patch("src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload") as mock_prepare:
+        with patch(
+            "src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload"
+        ) as mock_prepare:
             mock_prepare.return_value = {"type": "audio", "audio": "data"}
 
             await manager.speak(
@@ -153,12 +161,16 @@ class TestTTSTaskManagerSpeak:
         assert manager._sequence_counter == initial_sequence + 1
 
     @pytest.mark.asyncio
-    async def test_speak_creates_task(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_speak_creates_task(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that speak creates a TTS task."""
         display_text = DisplayText(text="Hello")
         websocket_send = AsyncMock()
 
-        with patch("src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload") as mock_prepare:
+        with patch(
+            "src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload"
+        ) as mock_prepare:
             mock_prepare.return_value = {"type": "audio", "audio": "data"}
 
             await manager.speak(
@@ -173,14 +185,18 @@ class TestTTSTaskManagerSpeak:
         assert len(manager.task_list) == 1
 
     @pytest.mark.asyncio
-    async def test_speak_starts_sender_task(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_speak_starts_sender_task(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that speak starts the sender task if not running."""
         display_text = DisplayText(text="Hello")
         websocket_send = AsyncMock()
 
         assert manager._sender_task is None
 
-        with patch("src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload") as mock_prepare:
+        with patch(
+            "src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload"
+        ) as mock_prepare:
             mock_prepare.return_value = {"type": "audio", "audio": "data"}
 
             await manager.speak(
@@ -218,9 +234,7 @@ class TestPayloadOrdering:
         await manager._payload_queue.put(({"text": "second", "order": 1}, 1))
 
         # Start sender task
-        sender_task = asyncio.create_task(
-            manager._process_payload_queue(mock_send)
-        )
+        sender_task = asyncio.create_task(manager._process_payload_queue(mock_send))
 
         # Wait for processing
         await asyncio.sleep(0.2)
@@ -277,12 +291,16 @@ class TestProcessTTS:
         return MagicMock()
 
     @pytest.mark.asyncio
-    async def test_process_tts_generates_audio(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_process_tts_generates_audio(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that _process_tts generates audio."""
         display_text = DisplayText(text="Test")
         actions = Actions()
 
-        with patch("src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload") as mock_prepare:
+        with patch(
+            "src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload"
+        ) as mock_prepare:
             mock_prepare.return_value = {"type": "audio", "audio": "base64data"}
 
             await manager._process_tts(
@@ -297,11 +315,15 @@ class TestProcessTTS:
         mock_tts_engine.async_generate_audio.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_process_tts_cleans_up_file(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_process_tts_cleans_up_file(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that _process_tts cleans up audio file."""
         display_text = DisplayText(text="Test")
 
-        with patch("src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload") as mock_prepare:
+        with patch(
+            "src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload"
+        ) as mock_prepare:
             mock_prepare.return_value = {"type": "audio", "audio": "data"}
 
             await manager._process_tts(
@@ -316,7 +338,9 @@ class TestProcessTTS:
         mock_tts_engine.remove_file.assert_called_once_with("/tmp/audio.wav")
 
     @pytest.mark.asyncio
-    async def test_process_tts_handles_error(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_process_tts_handles_error(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that _process_tts handles errors gracefully."""
         display_text = DisplayText(text="Test")
 
@@ -328,9 +352,17 @@ class TestProcessTTS:
             call_count += 1
             if call_count == 1:
                 raise Exception("TTS error")
-            return {"type": "audio", "audio": None, "volumes": [], "display_text": None, "actions": None}
+            return {
+                "type": "audio",
+                "audio": None,
+                "volumes": [],
+                "display_text": None,
+                "actions": None,
+            }
 
-        with patch("src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload") as mock_prepare:
+        with patch(
+            "src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload"
+        ) as mock_prepare:
             mock_prepare.side_effect = side_effect
 
             # Should not raise
@@ -399,11 +431,15 @@ class TestConcurrentTTSGeneration:
         return MagicMock()
 
     @pytest.mark.asyncio
-    async def test_concurrent_generation(self, manager, mock_tts_engine, mock_live2d_model):
+    async def test_concurrent_generation(
+        self, manager, mock_tts_engine, mock_live2d_model
+    ):
         """Test that multiple TTS tasks can run concurrently."""
         websocket_send = AsyncMock()
 
-        with patch("src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload") as mock_prepare:
+        with patch(
+            "src.open_llm_vtuber.conversations.tts_manager.prepare_audio_payload"
+        ) as mock_prepare:
             mock_prepare.return_value = {"type": "audio", "audio": "data"}
 
             # Queue multiple speak tasks

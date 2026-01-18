@@ -17,13 +17,13 @@ class TestTTSFactory:
             mock_class,
         ):
             try:
-                result = TTSFactory.get_tts_engine(
+                TTSFactory.get_tts_engine(
                     "edge_tts",
                     voice="en-US-AriaNeural",
                 )
                 mock_class.assert_called_once_with("en-US-AriaNeural")
             except ImportError:
-                pass
+                pytest.skip("edge_tts not installed")
 
     def test_get_azure_tts(self):
         """Test creating an Azure TTS engine."""
@@ -33,7 +33,7 @@ class TestTTSFactory:
             mock_class,
         ):
             try:
-                result = TTSFactory.get_tts_engine(
+                TTSFactory.get_tts_engine(
                     "azure_tts",
                     api_key="test_key",
                     region="eastus",
@@ -49,7 +49,7 @@ class TestTTSFactory:
                     "+0%",
                 )
             except ImportError:
-                pass
+                pytest.skip("azure_tts not installed")
 
     def test_unknown_tts_engine_raises_error(self):
         """Test that unknown TTS engine raises ValueError."""
@@ -81,41 +81,27 @@ class TestTTSFactory:
         ],
     )
     def test_all_tts_types_recognized(self, tts_type: str):
-        """Test that all TTS types are recognized by the factory."""
-        with patch(
-            f"src.open_llm_vtuber.tts.tts_factory.TTSFactory.get_tts_engine"
-        ) as mock_method:
+        """Test that all TTS types are recognized by the factory.
 
-            def side_effect(engine_type, **kwargs):
-                known_types = [
-                    "azure_tts",
-                    "bark_tts",
-                    "edge_tts",
-                    "pyttsx3_tts",
-                    "cosyvoice_tts",
-                    "cosyvoice2_tts",
-                    "melo_tts",
-                    "x_tts",
-                    "gpt_sovits_tts",
-                    "siliconflow_tts",
-                    "coqui_tts",
-                    "fish_api_tts",
-                    "minimax_tts",
-                    "sherpa_onnx_tts",
-                    "openai_tts",
-                    "spark_tts",
-                    "elevenlabs_tts",
-                    "cartesia_tts",
-                    "piper_tts",
-                ]
-                if engine_type not in known_types:
-                    raise ValueError(f"Unknown TTS engine type: {engine_type}")
-                return MagicMock()
-
-            mock_method.side_effect = side_effect
-
-            result = TTSFactory.get_tts_engine(tts_type)
-            assert result is not None
+        This test verifies that the factory code path for each TTS type exists
+        and doesn't raise ValueError (which would indicate an unknown type).
+        ImportError is expected when optional dependencies are not installed.
+        """
+        try:
+            # Call the real factory - it will try to import the implementation
+            TTSFactory.get_tts_engine(tts_type)
+        except ImportError:
+            # Expected when optional dependency is not installed
+            pass
+        except ValueError as e:
+            if "Unknown TTS engine type" in str(e):
+                pytest.fail(f"TTS type '{tts_type}' should be recognized by factory")
+            # Other ValueErrors (e.g., missing config) are acceptable
+            pass
+        except Exception:
+            # Other errors (TypeError, etc.) are acceptable - they indicate
+            # the factory recognized the type but couldn't create the instance
+            pass
 
 
 class TestTTSFactoryWithMockedImports:
@@ -137,7 +123,7 @@ class TestTTSFactoryWithMockedImports:
                 )
                 mock_tts_class.assert_called_once_with("v2/en_speaker_6")
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
     @pytest.mark.skip(reason="melo not installed - optional dependency")
     def test_melo_tts_import_and_instantiation(self):
@@ -163,7 +149,7 @@ class TestTTSFactoryWithMockedImports:
                     speed=1.0,
                 )
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
     def test_openai_tts_import_and_instantiation(self):
         """Test that openai_tts module is imported and class is instantiated."""
@@ -190,7 +176,7 @@ class TestTTSFactoryWithMockedImports:
                     file_extension="mp3",
                 )
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
     def test_elevenlabs_tts_import_and_instantiation(self):
         """Test that elevenlabs_tts module is imported and class is instantiated."""
@@ -214,7 +200,7 @@ class TestTTSFactoryWithMockedImports:
                 )
                 mock_tts_class.assert_called_once()
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
     def test_sherpa_onnx_tts_import_and_instantiation(self):
         """Test that sherpa_onnx_tts module is imported and class is instantiated."""
@@ -232,7 +218,7 @@ class TestTTSFactoryWithMockedImports:
                 )
                 mock_tts_class.assert_called_once()
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
 
 class TestTTSInterface:

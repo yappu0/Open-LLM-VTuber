@@ -10,12 +10,16 @@ class TestASRFactory:
     """Tests for the ASRFactory class."""
 
     def test_get_faster_whisper_asr(self):
-        """Test creating a Faster Whisper ASR engine."""
-        mock_class = MagicMock()
+        """Test creating a Faster Whisper ASR engine with mocked implementation."""
+        # Skip if faster_whisper is not installed (cannot patch non-existent module)
+        pytest.importorskip("faster_whisper")
+
+        mock_asr_class = MagicMock()
+        # Patch the actual module where VoiceRecognition is defined
         with patch(
-            "src.open_llm_vtuber.asr.asr_factory.ASRFactory.get_asr_system"
-        ) as mock_factory:
-            mock_factory.return_value = mock_class
+            "src.open_llm_vtuber.asr.faster_whisper_asr.VoiceRecognition",
+            mock_asr_class,
+        ):
             result = ASRFactory.get_asr_system(
                 "faster_whisper",
                 model_path="large-v3",
@@ -24,22 +28,35 @@ class TestASRFactory:
                 device="cpu",
                 compute_type="int8",
             )
-            mock_factory.assert_called_once()
+            mock_asr_class.assert_called_once_with(
+                model_path="large-v3",
+                download_root="models",
+                language="en",
+                device="cpu",
+                compute_type="int8",
+                prompt=None,
+            )
+            assert result is mock_asr_class.return_value
 
     def test_get_sherpa_onnx_asr(self):
-        """Test creating a Sherpa ONNX ASR engine."""
-        mock_class = MagicMock()
+        """Test creating a Sherpa ONNX ASR engine with mocked implementation."""
+        # Skip if sherpa_onnx is not installed (cannot patch non-existent module)
+        pytest.importorskip("sherpa_onnx")
+
+        mock_asr_class = MagicMock()
+        # Patch the actual module where VoiceRecognition is defined
         with patch(
-            "src.open_llm_vtuber.asr.asr_factory.ASRFactory.get_asr_system"
-        ) as mock_factory:
-            mock_factory.return_value = mock_class
+            "src.open_llm_vtuber.asr.sherpa_onnx_asr.VoiceRecognition",
+            mock_asr_class,
+        ):
             result = ASRFactory.get_asr_system(
                 "sherpa_onnx_asr",
                 model_type="sense_voice",
                 sense_voice="model.onnx",
                 tokens="tokens.txt",
             )
-            mock_factory.assert_called_once()
+            mock_asr_class.assert_called_once()
+            assert result is mock_asr_class.return_value
 
     def test_unknown_asr_system_raises_error(self):
         """Test that unknown ASR system raises ValueError."""
@@ -59,34 +76,27 @@ class TestASRFactory:
         ],
     )
     def test_all_asr_types_recognized(self, asr_type: str):
-        """Test that all ASR types are recognized by the factory."""
-        # We only test that the factory recognizes the type
-        # by checking it doesn't raise ValueError for unknown type
-        with patch.dict("sys.modules", {}):
-            # Mock the imports to avoid loading actual modules
-            with patch(
-                f"src.open_llm_vtuber.asr.asr_factory.ASRFactory.get_asr_system"
-            ) as mock_method:
-                # Configure mock to raise ValueError only for unknown types
-                def side_effect(system_name, **kwargs):
-                    known_types = [
-                        "faster_whisper",
-                        "whisper_cpp",
-                        "whisper",
-                        "fun_asr",
-                        "azure_asr",
-                        "groq_whisper_asr",
-                        "sherpa_onnx_asr",
-                    ]
-                    if system_name not in known_types:
-                        raise ValueError(f"Unknown ASR system: {system_name}")
-                    return MagicMock()
+        """Test that all ASR types are recognized by the factory.
 
-                mock_method.side_effect = side_effect
-
-                # This should not raise ValueError
-                result = ASRFactory.get_asr_system(asr_type)
-                assert result is not None
+        This test verifies that the factory code path for each ASR type exists
+        and doesn't raise ValueError (which would indicate an unknown type).
+        ImportError is expected when optional dependencies are not installed.
+        """
+        try:
+            # Call the real factory - it will try to import the implementation
+            ASRFactory.get_asr_system(asr_type)
+        except ImportError:
+            # Expected when optional dependency is not installed
+            pass
+        except ValueError as e:
+            if "Unknown ASR system" in str(e):
+                pytest.fail(f"ASR type '{asr_type}' should be recognized by factory")
+            # Other ValueErrors (e.g., missing config) are acceptable
+            pass
+        except Exception:
+            # Other errors (TypeError, etc.) are acceptable - they indicate
+            # the factory recognized the type but couldn't create the instance
+            pass
 
 
 class TestASRFactoryWithMockedImports:
@@ -123,8 +133,7 @@ class TestASRFactoryWithMockedImports:
                         prompt=None,
                     )
                 except ImportError:
-                    # If the module can't be imported, that's fine for this test
-                    pass
+                    pytest.skip("Module not installed")
 
     @pytest.mark.skip(reason="pywhispercpp not installed - optional dependency")
     def test_whisper_cpp_import_and_instantiation(self):
@@ -143,7 +152,7 @@ class TestASRFactoryWithMockedImports:
                 )
                 mock_asr_class.assert_called_once()
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
     def test_azure_asr_import_and_instantiation(self):
         """Test that azure_asr module is imported and class is instantiated."""
@@ -166,7 +175,7 @@ class TestASRFactoryWithMockedImports:
                     languages=["en-US"],
                 )
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
     def test_groq_whisper_asr_import_and_instantiation(self):
         """Test that groq_whisper_asr module is imported and class is instantiated."""
@@ -189,7 +198,7 @@ class TestASRFactoryWithMockedImports:
                     lang="en",
                 )
             except ImportError:
-                pass
+                pytest.skip("Module not installed")
 
 
 class TestASRInterface:

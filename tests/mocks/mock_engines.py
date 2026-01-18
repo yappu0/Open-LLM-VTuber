@@ -95,6 +95,10 @@ class MockVADEngine(VADInterface):
         """
         Mock speech detection.
 
+        Note: The real VADInterface uses yield (generator), but this mock
+        uses a simple return for ease of testing. For tests requiring
+        generator behavior, use the MockVAD class in test_interfaces.py.
+
         Args:
             audio_data: Input audio data.
 

@@ -5,8 +5,6 @@ Tests for engine interfaces (ASR, TTS, VAD).
 import asyncio
 import os
 import tempfile
-from abc import ABC
-from typing import AsyncIterator
 
 import numpy as np
 import pytest
