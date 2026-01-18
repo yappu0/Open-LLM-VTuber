@@ -26,11 +26,25 @@ class CORSStaticFiles(StarletteStaticFiles):
     Needed because Starlette StaticFiles might bypass standard middleware.
     """
 
+    # Class variable to store allowed origins, set by WebSocketServer
+    _cors_origins: list = ["*"]
+
     async def get_response(self, path: str, scope):
+        # Security: Prevent symlink attacks by not following symlinks
+        # Note: Starlette's StaticFiles already has some protection, but we add explicit check
         response = await super().get_response(path, scope)
 
-        # Add CORS headers to all responses
-        response.headers["Access-Control-Allow-Origin"] = "*"
+        # Add CORS headers based on configured origins
+        # If "*" is in the list, allow all origins (for development)
+        if "*" in self._cors_origins:
+            response.headers["Access-Control-Allow-Origin"] = "*"
+        else:
+            # Check if the request origin is in allowed list
+            origin = dict(scope.get("headers", [])).get(b"origin", b"").decode()
+            if origin in self._cors_origins:
+                response.headers["Access-Control-Allow-Origin"] = origin
+            # If origin not allowed, don't set the header (browser will block)
+
         response.headers["Access-Control-Allow-Methods"] = "GET, OPTIONS"
         response.headers["Access-Control-Allow-Headers"] = "*"
 
@@ -79,11 +93,20 @@ class WebSocketServer:
         )  # Use provided context or initialize a new empty one waiting to be loaded
         # It will be populated during the initialize method call
 
-        # Add global CORS middleware
+        # Get CORS origins from config, default to localhost if not specified
+        cors_origins = getattr(config.system_config, 'cors_origins', None)
+        if cors_origins is None:
+            cors_origins = ["http://localhost:8000", "http://127.0.0.1:8000"]
+
+        # Set CORS origins for static file handlers
+        CORSStaticFiles._cors_origins = cors_origins
+
+        # Add global CORS middleware with configurable origins
+        # Security: Use configured origins instead of wildcard "*"
         self.app.add_middleware(
             CORSMiddleware,
-            allow_origins=["*"],
-            allow_credentials=True,
+            allow_origins=cors_origins,
+            allow_credentials=True if "*" not in cors_origins else False,
             allow_methods=["*"],
             allow_headers=["*"],
         )

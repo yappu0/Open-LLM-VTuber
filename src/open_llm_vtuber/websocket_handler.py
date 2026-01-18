@@ -224,8 +224,9 @@ class WebSocketHandler:
                     continue
                 except Exception as e:
                     logger.error(f"Error processing message: {e}")
+                    # Security: Don't expose detailed error messages to clients
                     await websocket.send_text(
-                        json.dumps({"type": "error", "message": str(e)})
+                        json.dumps({"type": "error", "message": "An error occurred processing your request"})
                     )
                     continue
 

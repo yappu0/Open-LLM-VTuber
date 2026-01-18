@@ -1,5 +1,5 @@
-import os
 import json
+from pathlib import Path
 from typing import Callable
 from loguru import logger
 from fastapi import WebSocket
@@ -73,20 +73,19 @@ class ServiceContext:
         self.client_uid: str = None
 
     def __str__(self):
+        """Return a safe string representation without exposing sensitive config data."""
         return (
             f"ServiceContext:\n"
             f"  System Config: {'Loaded' if self.system_config else 'Not Loaded'}\n"
-            f"    Details: {json.dumps(self.system_config.model_dump(), indent=6) if self.system_config else 'None'}\n"
             f"  Live2D Model: {self.live2d_model.model_info if self.live2d_model else 'Not Loaded'}\n"
             f"  ASR Engine: {type(self.asr_engine).__name__ if self.asr_engine else 'Not Loaded'}\n"
-            f"    Config: {json.dumps(self.character_config.asr_config.model_dump(), indent=6) if self.character_config.asr_config else 'None'}\n"
+            f"    Model: {self.character_config.asr_config.asr_model if self.character_config and self.character_config.asr_config else 'None'}\n"
             f"  TTS Engine: {type(self.tts_engine).__name__ if self.tts_engine else 'Not Loaded'}\n"
-            f"    Config: {json.dumps(self.character_config.tts_config.model_dump(), indent=6) if self.character_config.tts_config else 'None'}\n"
+            f"    Model: {self.character_config.tts_config.tts_model if self.character_config and self.character_config.tts_config else 'None'}\n"
             f"  LLM Engine: {type(self.agent_engine).__name__ if self.agent_engine else 'Not Loaded'}\n"
-            f"    Agent Config: {json.dumps(self.character_config.agent_config.model_dump(), indent=6) if self.character_config.agent_config else 'None'}\n"
+            f"    Agent: {self.character_config.agent_config.conversation_agent_choice if self.character_config and self.character_config.agent_config else 'None'}\n"
             f"  VAD Engine: {type(self.vad_engine).__name__ if self.vad_engine else 'Not Loaded'}\n"
-            f"    Agent Config: {json.dumps(self.character_config.vad_config.model_dump(), indent=6) if self.character_config.vad_config else 'None'}\n"
-            f"  System Prompt: {self.system_prompt or 'Not Set'}\n"
+            f"  System Prompt Length: {len(self.system_prompt) if self.system_prompt else 0} chars\n"
             f"  MCP Enabled: {'Yes' if self.mcp_client else 'No'}"
         )
 
@@ -493,13 +492,26 @@ class ServiceContext:
             else:
                 # Load alternative config and merge with base config
                 characters_dir = self.system_config.config_alts_dir
-                file_path = os.path.normpath(
-                    os.path.join(characters_dir, config_file_name)
-                )
-                if not file_path.startswith(characters_dir):
-                    raise ValueError("Invalid configuration file path")
 
-                alt_config_data = read_yaml(file_path).get("character_config")
+                # Security: Validate that file_name doesn't contain path traversal
+                # Only allow simple filenames without directory separators
+                if not config_file_name or "/" in config_file_name or "\\" in config_file_name:
+                    raise ValueError("Invalid configuration file name")
+
+                # Use pathlib for secure path handling
+                base_path = Path(characters_dir).resolve()
+                file_path = (base_path / config_file_name).resolve()
+
+                # Verify the resolved path is within the allowed directory
+                try:
+                    file_path.relative_to(base_path)
+                except ValueError:
+                    raise ValueError("Invalid configuration file path: path traversal detected")
+
+                if not file_path.exists():
+                    raise ValueError(f"Configuration file not found: {config_file_name}")
+
+                alt_config_data = read_yaml(str(file_path)).get("character_config")
 
                 # Start with original config data and perform a deep merge
                 new_character_config_data = deep_merge(
@@ -513,10 +525,7 @@ class ServiceContext:
                 }
                 new_config = validate_config(new_config)
                 await self.load_from_config(new_config)  # Await the async load
-                logger.debug(f"New config: {self}")
-                logger.debug(
-                    f"New character config: {self.character_config.model_dump()}"
-                )
+                logger.debug(f"Config switched successfully: {self}")
 
                 # Send responses to client
                 await websocket.send_text(
@@ -545,14 +554,26 @@ class ServiceContext:
                     f"Failed to load configuration from {config_file_name}"
                 )
 
-        except Exception as e:
-            logger.error(f"Error switching configuration: {e}")
-            logger.debug(self)
+        except ValueError as e:
+            # ValueError is raised for validation errors - safe to show to client
+            logger.warning(f"Configuration switch validation error: {e}")
             await websocket.send_text(
                 json.dumps(
                     {
                         "type": "error",
-                        "message": f"Error switching configuration: {str(e)}",
+                        "message": f"Configuration error: {str(e)}",
+                    }
+                )
+            )
+            raise e
+        except Exception as e:
+            # Other errors may contain sensitive info - use generic message for client
+            logger.error(f"Error switching configuration: {e}")
+            await websocket.send_text(
+                json.dumps(
+                    {
+                        "type": "error",
+                        "message": "Failed to switch configuration. Please check server logs.",
                     }
                 )
             )

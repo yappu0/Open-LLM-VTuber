@@ -60,7 +60,7 @@ class TTSInterface(metaclass=abc.ABCMeta):
 
     def generate_cache_file_name(self, file_name_no_ext=None, file_extension="wav"):
         """
-        Generate a cross-platform cache file name.
+        Generate a cross-platform cache file name with path traversal protection.
 
         file_name_no_ext: str
             name of the file without extension
@@ -77,5 +77,17 @@ class TTSInterface(metaclass=abc.ABCMeta):
         if file_name_no_ext is None:
             file_name_no_ext = "temp"
 
-        file_name = f"{file_name_no_ext}.{file_extension}"
+        # Security: Sanitize file_name_no_ext to prevent path traversal
+        # Remove any path separators and use only the basename
+        safe_name = os.path.basename(file_name_no_ext.replace("/", "_").replace("\\", "_"))
+        if not safe_name:
+            safe_name = "temp"
+
+        # Additional validation: only allow alphanumeric, underscore, hyphen
+        import re
+        if not re.match(r'^[\w\-]+$', safe_name):
+            logger.warning(f"Unsafe filename detected, using 'temp': {file_name_no_ext}")
+            safe_name = "temp"
+
+        file_name = f"{safe_name}.{file_extension}"
         return os.path.join(cache_dir, file_name)

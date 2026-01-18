@@ -18,7 +18,8 @@ def get_comment_text(comment_list):
 
 
 def extract_comments(yaml_text: str) -> dict:
-    yaml = YAML()
+    # Security: Use round-trip type for safe YAML loading while preserving comments
+    yaml = YAML(typ="rt")
     yaml.preserve_quotes = True
     data = yaml.load(StringIO(yaml_text))
 

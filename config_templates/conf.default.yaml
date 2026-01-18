@@ -5,6 +5,12 @@ system_config:
   port: 12393
   # New setting for alternative configurations
   config_alts_dir: 'characters'
+  # CORS (Cross-Origin Resource Sharing) allowed origins
+  # Use ["*"] to allow any origin (not recommended for production)
+  # For local development, localhost origins are usually sufficient
+  cors_origins:
+    - 'http://localhost:12393'
+    - 'http://127.0.0.1:12393'
   # Tool prompts that will be appended to the persona prompt
   tool_prompts:
     # This will be appended to the end of system prompt to let LLM include keywords to control facial expressions.

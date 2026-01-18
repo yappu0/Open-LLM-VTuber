@@ -27,6 +27,20 @@ def _is_safe_filename(filename: str) -> bool:
     return bool(pattern.match(filename))
 
 
+def _is_valid_history_uid(history_uid: str) -> bool:
+    """
+    Validate history_uid format to prevent enumeration attacks.
+    Expected format: YYYY-MM-DD_HH-MM-SS_<32 hex chars>
+    Example: 2024-01-15_14-30-45_abc123def456789012345678901234ab
+    """
+    if not history_uid or len(history_uid) > 100:
+        return False
+
+    # Validate format: date_time_uuid
+    pattern = re.compile(r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_[a-f0-9]{32}$")
+    return bool(pattern.match(history_uid))
+
+
 def _sanitize_path_component(component: str) -> str:
     """Sanitize and validate a path component"""
     # Remove any path components, get just the basename
@@ -215,6 +229,11 @@ def get_history(conf_uid: str, history_uid: str) -> List[HistoryMessage]:
             logger.warning("Missing history_uid")
         return []
 
+    # Security: Validate history_uid format to prevent enumeration
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(f"Invalid history_uid format: {history_uid}")
+        return []
+
     filepath = _get_safe_history_path(conf_uid, history_uid)
 
     if not os.path.exists(filepath):
@@ -234,6 +253,11 @@ def delete_history(conf_uid: str, history_uid: str) -> bool:
     """Delete a specific history file"""
     if not conf_uid or not history_uid:
         logger.warning("Missing conf_uid or history_uid")
+        return False
+
+    # Security: Validate history_uid format
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(f"Invalid history_uid format for deletion: {history_uid}")
         return False
 
     filepath = _get_safe_history_path(conf_uid, history_uid)

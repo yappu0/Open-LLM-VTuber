@@ -1,6 +1,6 @@
 # config_manager/system.py
 from pydantic import Field, model_validator
-from typing import Dict, ClassVar
+from typing import Dict, ClassVar, List
 from .i18n import I18nMixin, Description
 
 
@@ -13,6 +13,12 @@ class SystemConfig(I18nMixin):
     config_alts_dir: str = Field(..., alias="config_alts_dir")
     tool_prompts: Dict[str, str] = Field(..., alias="tool_prompts")
     enable_proxy: bool = Field(False, alias="enable_proxy")
+    # Security: CORS origins configuration - defaults to localhost only
+    # Set to ["*"] for development or add specific origins for production
+    cors_origins: List[str] = Field(
+        default_factory=lambda: ["http://localhost:8000", "http://127.0.0.1:8000"],
+        alias="cors_origins"
+    )
 
     DESCRIPTIONS: ClassVar[Dict[str, Description]] = {
         "conf_version": Description(en="Configuration version", zh="配置文件版本"),
@@ -28,6 +34,10 @@ class SystemConfig(I18nMixin):
         "enable_proxy": Description(
             en="Enable proxy mode for multiple clients",
             zh="启用代理模式以支持多个客户端使用一个 ws 连接",
+        ),
+        "cors_origins": Description(
+            en="Allowed CORS origins (use [\"*\"] for any origin, not recommended for production)",
+            zh="允许的CORS来源 (使用 [\"*\"] 允许任何来源，不建议在生产环境中使用)",
         ),
     }
 

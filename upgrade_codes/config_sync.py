@@ -24,7 +24,8 @@ class ConfigSynchronizer:
         self.lang = lang
         self.texts = TEXTS[lang]
         self.default_path = ZH_DEFAULT_CONF if lang == "zh" else EN_DEFAULT_CONF
-        self.yaml = YAML()
+        # Security: Use round-trip type to preserve comments with safe loading
+        self.yaml = YAML(typ="rt")
         self.yaml.preserve_quotes = True
         self.user_path = USER_CONF
         self.backup_path = BACKUP_CONF
@@ -285,7 +286,8 @@ class ConfigSynchronizer:
         """
         fallback_version = "v1.1.1"
         try:
-            yaml = YAML()
+            # Security: Use round-trip type for safe YAML loading
+            yaml = YAML(typ="rt")
             with open(BACKUP_CONF, "r", encoding="utf-8") as f:
                 backup_conf = yaml.load(f)
                 raw_version = backup_conf.get("system_config", {}).get(

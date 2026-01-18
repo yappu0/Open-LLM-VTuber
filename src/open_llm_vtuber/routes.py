@@ -105,12 +105,29 @@ def init_webtool_routes(default_context_cache: ServiceContext) -> APIRouter:
         valid_characters = []
         supported_extensions = [".png", ".jpg", ".jpeg"]
 
+        # Security: Use follow_symlinks=False to prevent symlink attacks
         for entry in os.scandir(live2d_dir):
-            if entry.is_dir():
+            # Skip symlinks to prevent directory traversal via symlinks
+            if entry.is_symlink():
+                logger.warning(f"Skipping symlink in live2d-models: {entry.name}")
+                continue
+
+            if entry.is_dir(follow_symlinks=False):
                 folder_name = entry.name.replace("\\", "/")
+
+                # Security: Validate folder name doesn't contain path traversal
+                if ".." in folder_name or folder_name.startswith("/"):
+                    logger.warning(f"Skipping suspicious folder name: {folder_name}")
+                    continue
+
                 model3_file = os.path.join(
                     live2d_dir, folder_name, f"{folder_name}.model3.json"
                 ).replace("\\", "/")
+
+                # Security: Check if the file is a symlink
+                if os.path.islink(model3_file):
+                    logger.warning(f"Skipping symlink model file: {model3_file}")
+                    continue
 
                 if os.path.isfile(model3_file):
                     # Find avatar file if it exists
@@ -119,6 +136,9 @@ def init_webtool_routes(default_context_cache: ServiceContext) -> APIRouter:
                         avatar_path = os.path.join(
                             live2d_dir, folder_name, f"{folder_name}{ext}"
                         )
+                        # Security: Skip symlinked avatar files
+                        if os.path.islink(avatar_path):
+                            continue
                         if os.path.isfile(avatar_path):
                             avatar_file = avatar_path.replace("\\", "/")
                             break
