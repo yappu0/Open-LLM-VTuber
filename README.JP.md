@@ -1,42 +1,10 @@
 ![](./assets/banner.jpg)
 
 <h1 align="center">Open-LLM-VTuber</h1>
-<h3 align="center">
-
-[![GitHub release](https://img.shields.io/github/v/release/t41372/Open-LLM-VTuber)](https://github.com/t41372/Open-LLM-VTuber/releases) 
-[![license](https://img.shields.io/github/license/t41372/Open-LLM-VTuber)](https://github.com/t41372/Open-LLM-VTuber/blob/master/LICENSE) 
-[![CodeQL](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/codeql.yml/badge.svg)](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/codeql.yml)
-[![Ruff](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/ruff.yml/badge.svg)](https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/actions/workflows/ruff.yml)
-[![Docker](https://img.shields.io/badge/t41372%2FOpen--LLM--VTuber-%25230db7ed.svg?logo=docker&logoColor=blue&labelColor=white&color=blue)](https://hub.docker.com/r/t41372/open-llm-vtuber) 
-[![QQ User Group](https://img.shields.io/badge/QQ_User_Group-792615362-white?style=flat&logo=qq&logoColor=white)](https://qm.qq.com/q/ngvNUQpuKI)
-[![Static Badge](https://img.shields.io/badge/Join%20Chat-Zulip?style=flat&logo=zulip&label=Zulip(dev-community)&color=blue&link=https%3A%2F%2Folv.zulipchat.com)](https://olv.zulipchat.com)
-
-> **📢 v2.0 開発中**: 現在、Open-LLM-VTuber v2.0の開発に注力しています — これはコードベースの完全な書き直しです。v2.0は現在、初期の議論と計画段階にあります。v1への機能リクエストに関する新しいissueやpull requestの提出はお控えください。v2の議論に参加したい、または貢献したい場合は、[Zulip](https://olv.zulipchat.com)の開発者コミュニティにご参加ください。週次ミーティングのスケジュールはZulipで発表されます。v1のバグ修正と既存のpull requestの対応は継続します。
-
-
-[![BuyMeACoffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/yi.ting)
-[![](https://dcbadge.limes.pink/api/server/3UDA8YFDXx)](https://discord.gg/3UDA8YFDXx)
-
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Open-LLM-VTuber/Open-LLM-VTuber)
-
-[English README](https://github.com/t41372/Open-LLM-VTuber/blob/main/README.md) | [中文 README](https://github.com/t41372/Open-LLM-VTuber/blob/main/README.CN.md) | [한국어 README](https://github.com/t41372/Open-LLM-VTuber/blob/main/README.KR.md) | 日本語 README
-
-[ドキュメント](https://open-llm-vtuber.github.io/docs/quick-start) | [![Roadmap](https://img.shields.io/badge/Roadmap-GitHub_Project-yellow)](https://github.com/orgs/Open-LLM-VTuber/projects/2)
-
-<a href="https://trendshift.io/repositories/12358" target="_blank"><img src="https://trendshift.io/api/badge/repositories/12358" alt="t41372%2FOpen-LLM-VTuber | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
-</h3>
-
-
-> よくある質問 (中国語で作成): https://docs.qq.com/pdf/DTFZGQXdTUXhIYWRq
->
-> ユーザーアンケート: https://forms.gle/w6Y6PiHTZr1nzbtWA
->
-> アンケート(中国語): https://wj.qq.com/s2/16150415/f50a/
 
 > :warning: このプロジェクトはまだ初期段階にあり、現在 **活発に開発中** です。
 
-> :warning: サーバーをリモートで実行し、他のデバイス（例：PCでサーバーを実行し、スマホからアクセス）を通じてアクセスするには、`https` 設定が必要です。これはフロントエンドのマイク機能がセキュアな環境（https または localhost）でのみ動作するためです。詳細はこちら-\> [MDN Web Doc](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)。したがって、リモートデバイス（つまりlocalhost以外の環境）からページにアクセスするには、リバースプロキシを使用してhttpsを設定する必要があります。
+> :warning: サーバーをリモートで実行し、他のデバイス（例：PCでサーバーを実行し、スマホからアクセス）を通じてアクセスするには、`https` 設定が必要です。これはフロントエンドのマイク機能がセキュアな環境（https または localhost）でのみ動作するためです。詳細はこちら-> [MDN Web Doc](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia)。したがって、リモートデバイス（つまりlocalhost以外の環境）からページにアクセスするには、リバースプロキシを使用してhttpsを設定する必要があります。
 
 ## ⭐️ このプロジェクトは何ですか？
 
@@ -46,12 +14,9 @@
 
 長期記憶機能は一時的に削除されましたが（まもなく再提供予定）、チャットログの **永続保存** のおかげで、以前に終わらなかった会話を **中断することなく続けることができ**、貴重なインタラクションの瞬間を失うことはありません。
 
-バックエンドサポートの面では、様々なLLM推論、テキスト読み上げ（TTS）、音声認識ソリューションを統合しました。AIコンパニオンをカスタマイズしたい場合は、[Character Customization Guide](https://open-llm-vtuber.github.io/docs/user-guide/live2d)を参照して、AIコンパニオンの外見や性格をカスタマイズできます。
+バックエンドサポートの面では、様々なLLM推論、テキスト読み上げ（TTS）、音声認識ソリューションを統合しました。
 
 このプロジェクトが `Open-LLM-Companion` や `Open-LLM-Waifu` ではなく `Open-LLM-Vtuber` という名前である理由は、初期の開発目標が **Windows以外のプラットフォームでもオフラインで実行可能なオープンソースソリューションを活用** し、**クローズドなAI Vtuberである `neuro-sama` を再現** することだったためです。
-
-このプロジェクトは `v1.0.0` バージョン以降、**コードのリファクタリング** を経ており、現在活発に開発中で、**まもなく様々な興味深い機能が追加される予定** です！🚀 アップデート計画は [Roadmap](https://github.com/users/t41372/projects/1/views/5) で確認できます。
-
 
 ### 👀 効果実証
 | ![](assets/i1.jpg) | ![](assets/i2.jpg) |
@@ -98,15 +63,9 @@
 >
 > このパートナーは10万回以上使用されました。
 
-## 🚀 クイックスタート
-
-インストールについては、ドキュメントの [Quick Start](https://open-llm-vtuber.github.io/docs/quick-start) セクションを参照してください。
-
-
-
 ## ☝ アップデート
 
-> :warning: `v1.0.0` バージョンには **互換性のない変更** があり、再デプロイが必要です。以下の方法でアップデート **することは可能ですが**、`conf.yaml` ファイルに互換性がなく、ほとんどの依存関係を `uv` で再インストールする必要があります。`v1.0.0` 以前のバージョンからアップグレードする場合は、[最新のデプロイガイド](https://open-llm-vtuber.github.io/docs/quick-start)を参照してプロジェクトを再デプロイすることを推奨します。
+> :warning: `v1.0.0` バージョンには **互換性のない変更** があり、再デプロイが必要です。以下の方法でアップデート **することは可能ですが**、`conf.yaml` ファイルに互換性がなく、ほとんどの依存関係を `uv` で再インストールする必要があります。`v1.0.0` 以前のバージョンからアップグレードする場合は、プロジェクトを再デプロイすることを推奨します。
 
 `v1.0.0` 以降のバージョンをインストールしている場合、アップデートは `uv run update.py` を使用してください。
 
@@ -118,20 +77,6 @@
 
 また、インストールガイドを参照して、不要になった追加ツール（`uv`、`ffmpeg`、`deeplx` など）がないか確認してください。
 
-## 🤗 貢献したいですか？
-
-[Development Guide](https://docs.llmvtuber.com/docs/development-guide/overview)を参照してください。
-
-# 🎉🎉🎉 関連プロジェクト
-
-[ylxmf2005/LLM-Live2D-Desktop-Assitant](https://github.com/ylxmf2005/LLM-Live2D-Desktop-Assitant)
-
-  - LLMで駆動する **Live2D デスクトップアシスタント** です！ WindowsとMacOSの両方で使用可能で、画面を検出し、クリップボードの内容を取得し、固有の声で音声コマンドに反応します。**ウェイクワード、歌唱機能**、コンピュータ全体の制御をサポートし、好きなキャラクターとスムーズに対話できます。
-
-
-
-
-
 ## 📜 サードパーティライセンス (Third-Party Licenses)
 
 ### Live2D サンプルモデルに関する通知 (Live2D Sample Models Notice)
@@ -141,15 +86,3 @@
 このコンテンツはLive2D Inc.が所有し著作権を持つサンプルデータを使用しており、Live2D Inc.が定めた **規約と条件** に従って活用されます。（詳細は [Live2D Free Material License Agreement](https://www.live2d.jp/en/terms/live2d-free-material-license-agreement/) および [Terms of Use](https://www.live2d.com/eula/live2d-sample-model-terms_en.html) を参照）
 
 注：特に中堅・大規模企業での **商用利用** の際、このLive2Dサンプルモデルの使用には追加のライセンス要件が適用される場合があります。プロジェクトを商用利用する計画がある場合は、必ずLive2D Inc.から適切な許可を得るか、当該モデルが含まれていないバージョンを使用してください。
-
-## コントリビューター
-
-このプロジェクトを可能にしてくださった **コントリビューターとメンテナの方々に感謝いたします。**
-
-<a href="https://github.com/Open-LLM-VTuber/Open-LLM-VTuber/graphs/contributors">
-<img src="https://contrib.rocks/image?repo=Open-LLM-VTuber/Open-LLM-VTuber" />
-</a>
-
-## スター履歴 (Star History)
-
-[![Star History Chart](https://api.star-history.com/svg?repos=Open-LLM-VTuber/open-llm-vtuber&type=Date)](https://star-history.com/#Open-LLM-VTuber/open-llm-vtuber&Date)
