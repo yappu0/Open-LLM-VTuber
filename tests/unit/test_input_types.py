@@ -2,7 +2,6 @@
 Tests for input types (input_types.py).
 """
 
-import pytest
 
 from open_llm_vtuber.agent.input_types import (
     BatchInput,

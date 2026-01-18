@@ -2,11 +2,10 @@
 Pytest configuration and shared fixtures for Open-LLM-VTuber tests.
 """
 
-import asyncio
 import os
 import shutil
 import tempfile
-from typing import AsyncIterator, Generator
+from typing import Generator
 from unittest.mock import AsyncMock, MagicMock
 
 import numpy as np

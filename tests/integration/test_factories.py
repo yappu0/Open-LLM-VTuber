@@ -5,7 +5,6 @@ These tests verify that factories can create appropriate engine instances
 without actually loading heavy models or making API calls.
 """
 
-from unittest.mock import MagicMock, patch
 
 import pytest
 

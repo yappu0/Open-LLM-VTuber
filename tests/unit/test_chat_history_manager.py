@@ -2,10 +2,7 @@
 Tests for chat history manager (chat_history_manager.py).
 """
 
-import json
 import os
-import tempfile
-import shutil
 
 import pytest
 
@@ -74,10 +71,6 @@ class TestCreateNewHistory:
         """Setup temp directory and cleanup after test."""
         self.temp_dir = tmp_path / "chat_history"
         self.temp_dir.mkdir()
-
-        # Store original function
-        original_ensure = chm._ensure_conf_dir
-        original_get_path = chm._get_safe_history_path
 
         def mock_ensure_conf_dir(conf_uid):
             if not conf_uid:
