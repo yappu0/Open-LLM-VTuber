@@ -111,7 +111,7 @@ def store_message(
     content: str,
     name: str | None = None,
     avatar: str | None = None,
-):
+) -> bool:
     """Store a message in a specific history file
 
     Args:
@@ -127,12 +127,12 @@ def store_message(
             logger.warning("Missing conf_uid")
         if not history_uid:
             logger.warning("Missing history_uid")
-        return
+        return False
 
     # Security: Validate history_uid format to prevent enumeration
     if not _is_valid_history_uid(history_uid):
         logger.warning(f"Invalid history_uid format for store_message: {history_uid}")
-        return
+        return False
 
     filepath = _get_safe_history_path(conf_uid, history_uid)
     logger.debug(f"Storing {role} message to {filepath}")
@@ -147,7 +147,7 @@ def store_message(
             logger.error(
                 f"Failed to load history file {filepath}: {e}. Aborting to prevent data loss."
             )
-            return
+            return False
 
     now_str = datetime.now().isoformat(timespec="seconds")
     new_item = {
@@ -167,6 +167,7 @@ def store_message(
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(history_data, f, ensure_ascii=False, indent=2)
     logger.debug(f"Successfully stored {role} message")
+    return True
 
 
 def get_metadata(conf_uid: str, history_uid: str) -> dict:
