@@ -27,6 +27,20 @@ def _is_safe_filename(filename: str) -> bool:
     return bool(pattern.match(filename))
 
 
+def _is_valid_history_uid(history_uid: str) -> bool:
+    """
+    Validate history_uid format to prevent enumeration attacks.
+    Expected format: YYYY-MM-DD_HH-MM-SS_<32 hex chars>
+    Example: 2024-01-15_14-30-45_abc123def456789012345678901234ab
+    """
+    if not history_uid or len(history_uid) > 100:
+        return False
+
+    # Validate format: date_time_uuid
+    pattern = re.compile(r"^\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2}_[a-f0-9]{32}$")
+    return bool(pattern.match(history_uid))
+
+
 def _sanitize_path_component(component: str) -> str:
     """Sanitize and validate a path component"""
     # Remove any path components, get just the basename
@@ -97,7 +111,7 @@ def store_message(
     content: str,
     name: str | None = None,
     avatar: str | None = None,
-):
+) -> bool:
     """Store a message in a specific history file
 
     Args:
@@ -113,7 +127,12 @@ def store_message(
             logger.warning("Missing conf_uid")
         if not history_uid:
             logger.warning("Missing history_uid")
-        return
+        return False
+
+    # Security: Validate history_uid format to prevent enumeration
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(f"Invalid history_uid format for store_message: {history_uid}")
+        return False
 
     filepath = _get_safe_history_path(conf_uid, history_uid)
     logger.debug(f"Storing {role} message to {filepath}")
@@ -123,9 +142,12 @@ def store_message(
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 history_data = json.load(f)
-        except Exception:
-            logger.error(f"Failed to load history file: {filepath}")
-            pass
+        except Exception as e:
+            # Security: Don't overwrite existing history if we can't read it
+            logger.error(
+                f"Failed to load history file {filepath}: {e}. Aborting to prevent data loss."
+            )
+            return False
 
     now_str = datetime.now().isoformat(timespec="seconds")
     new_item = {
@@ -145,11 +167,17 @@ def store_message(
     with open(filepath, "w", encoding="utf-8") as f:
         json.dump(history_data, f, ensure_ascii=False, indent=2)
     logger.debug(f"Successfully stored {role} message")
+    return True
 
 
 def get_metadata(conf_uid: str, history_uid: str) -> dict:
     """Get metadata from history file"""
     if not conf_uid or not history_uid:
+        return {}
+
+    # Security: Validate history_uid format to prevent enumeration
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(f"Invalid history_uid format for get_metadata: {history_uid}")
         return {}
 
     filepath = _get_safe_history_path(conf_uid, history_uid)
@@ -174,6 +202,11 @@ def update_metadate(conf_uid: str, history_uid: str, metadata: dict) -> bool:
     If no metadata exists, creates new metadata entry.
     """
     if not conf_uid or not history_uid:
+        return False
+
+    # Security: Validate history_uid format to prevent enumeration
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(f"Invalid history_uid format for update_metadate: {history_uid}")
         return False
 
     filepath = _get_safe_history_path(conf_uid, history_uid)
@@ -215,6 +248,11 @@ def get_history(conf_uid: str, history_uid: str) -> List[HistoryMessage]:
             logger.warning("Missing history_uid")
         return []
 
+    # Security: Validate history_uid format to prevent enumeration
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(f"Invalid history_uid format: {history_uid}")
+        return []
+
     filepath = _get_safe_history_path(conf_uid, history_uid)
 
     if not os.path.exists(filepath):
@@ -226,7 +264,8 @@ def get_history(conf_uid: str, history_uid: str) -> List[HistoryMessage]:
             history_data = json.load(f)
             # Filter out metadata
             return [msg for msg in history_data if msg["role"] != "metadata"]
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed to load history file {filepath}: {e}")
         return []
 
 
@@ -234,6 +273,11 @@ def delete_history(conf_uid: str, history_uid: str) -> bool:
     """Delete a specific history file"""
     if not conf_uid or not history_uid:
         logger.warning("Missing conf_uid or history_uid")
+        return False
+
+    # Security: Validate history_uid format
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(f"Invalid history_uid format for deletion: {history_uid}")
         return False
 
     filepath = _get_safe_history_path(conf_uid, history_uid)
@@ -319,6 +363,13 @@ def modify_latest_message(
         logger.warning("Missing conf_uid or history_uid")
         return False
 
+    # Security: Validate history_uid format to prevent enumeration
+    if not _is_valid_history_uid(history_uid):
+        logger.warning(
+            f"Invalid history_uid format for modify_latest_message: {history_uid}"
+        )
+        return False
+
     filepath = _get_safe_history_path(conf_uid, history_uid)
     if not os.path.exists(filepath):
         logger.warning(f"History file not found: {filepath}")
@@ -357,6 +408,14 @@ def rename_history_file(
     """Rename a history file with a new history_uid"""
     if not conf_uid or not old_history_uid or not new_history_uid:
         logger.warning("Missing required parameters for rename")
+        return False
+
+    # Security: Validate both history_uid formats to prevent enumeration
+    if not _is_valid_history_uid(old_history_uid):
+        logger.warning(f"Invalid old_history_uid format for rename: {old_history_uid}")
+        return False
+    if not _is_valid_history_uid(new_history_uid):
+        logger.warning(f"Invalid new_history_uid format for rename: {new_history_uid}")
         return False
 
     old_filepath = _get_safe_history_path(conf_uid, old_history_uid)

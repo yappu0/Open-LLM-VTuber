@@ -18,7 +18,9 @@ def get_comment_text(comment_list):
 
 
 def extract_comments(yaml_text: str) -> dict:
-    yaml = YAML()
+    # Use round-trip type ("rt") to preserve comments for comparison
+    # Note: ruamel.yaml uses safe loading by default regardless of type
+    yaml = YAML(typ="rt")
     yaml.preserve_quotes = True
     data = yaml.load(StringIO(yaml_text))
 

@@ -527,7 +527,7 @@ class TestRenameHistoryFile:
         old_uid = chm.create_new_history("conf1")
         chm.store_message("conf1", old_uid, "human", "Test")
 
-        new_uid = "new_history_uid"
+        new_uid = "2099-12-31_23-59-59_00000000000000000000000000000001"
         result = chm.rename_history_file("conf1", old_uid, new_uid)
         assert result is True
 
