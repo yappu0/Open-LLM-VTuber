@@ -1,0 +1,48 @@
+{
+  "permissions": {
+    "allow": [
+      // パッケージ管理・実行
+      "Bash(uv sync:*)",
+      "Bash(uv run run_server.py:*)",
+      "Bash(uv run pytest:*)",
+      "Bash(uv run ruff:*)",
+      "Bash(pre-commit run:*)",
+      // Git（読み取り系）
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
+      // Git（書き込み系）
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      // ファイル操作
+      "Bash(rm:*)",
+      // MCP
+      "mcp__plugin_serena_serena__find_symbol"
+    ],
+    "deny": [
+      // Git（破壊的操作）
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Bash(git rebase:*)",
+      // ファイル削除（再帰的・強制）
+      "Bash(rm -rf:*)",
+      "Bash(rm -r:*)",
+      "Bash(rm -fr:*)",
+      // ファイル削除（Windows）
+      "Bash(del:*)",
+      "Bash(rmdir:*)",
+      "Bash(rd:*)",
+      // システム操作
+      "Bash(format:*)",
+      "Bash(shutdown:*)",
+      "Bash(taskkill:*)"
+    ]
+  }
+}
